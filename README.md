@@ -33,7 +33,7 @@ Keep in mind that the code must be written in OOP.
 | **pytest suite** | Six tests guard the core engine + GUI logic (headless) |
 ---
 
-## 🏃‍♂️ Quick Start
+## Quick Start
 
 ```bash
 # clone and enter repo
