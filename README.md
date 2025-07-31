@@ -40,14 +40,14 @@ Keep in mind that the code must be written in OOP.
 git clone https://github.com/your-account/file-backup-logger.git
 cd file-backup-logger
 
-# 1️⃣ create & activate a virtual env
+# 1 create & activate a virtual env
 python -m venv .venv
 source .venv/bin/activate  # or .\.venv\Scripts\activate on Windows
 
-# 2️⃣ install dev dependencies (only pytest)
+# 2️ install dev dependencies (only pytest)
 pip install -r requirements.txt
 
-# 3️⃣ launch the GUI
+# 3️ launch the GUI
 python -m src.gui
 ```
 
