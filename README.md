@@ -22,4 +22,44 @@ Keep in mind that the code must be written in OOP.
 - Add config file (e.g., .json) to store user preferences (folders, backup interval).
 - Final testing. Create README with instructions and screenshots. Submit as Git repo.
 
-## Estimated time to work 2 weeks
+## Key Features
+| Feature | What it does |
+|---------|--------------|
+| **ZIP ⇄ Folder toggle** | Choose compressed or plain backups with a single checkbox/flag |
+| **Rotating logs** | `logs/backup.log` keeps the last 5 × 512 KB runs |
+| **Real progress bar** | Per-file % progress in the GUI (threads keep UI responsive) |
+| **Auto version-bump** | `config.json` patch number increments after every successful run |
+| **Config file** | Edit defaults without touching Python (`backup_root`, `compress`, etc.) |
+| **pytest suite** | Six tests guard the core engine + GUI logic (headless) |
+---
+
+## 🏃‍♂️ Quick Start
+
+```bash
+# clone and enter repo
+git clone https://github.com/your-account/file-backup-logger.git
+cd file-backup-logger
+
+# 1️⃣ create & activate a virtual env
+python -m venv .venv
+source .venv/bin/activate  # or .\.venv\Scripts\activate on Windows
+
+# 2️⃣ install dev dependencies (only pytest)
+pip install -r requirements.txt
+
+# 3️⃣ launch the GUI
+python -m src.gui
+```
+
+## Project layout
+file-backup-logger/
+├─ src/
+│  ├─ backup.py    ← engine (copy / zip / versioning / progress)
+│  ├─ config.py    ← JSON prefs (created on first run)
+│  ├─ logger.py    ← rotating log wrapper
+│  └─ gui.py       ← Tkinter front-end
+├─ tests/          ← pytest cases (headless)
+├─ backups/        ← generated at runtime (git-ignored)
+├─ logs/           ← rotating log files (git-ignored)
+├─ README.md
+└─ requirements.txt
