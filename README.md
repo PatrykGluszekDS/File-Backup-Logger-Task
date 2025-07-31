@@ -37,7 +37,7 @@ Keep in mind that the code must be written in OOP.
 
 ```bash
 # clone and enter repo
-git clone https://github.com/your-account/file-backup-logger.git
+git clone ...
 cd file-backup-logger
 
 # 1 create & activate a virtual env
