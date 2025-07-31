@@ -1,4 +1,4 @@
-#File Backup Logger
+# File Backup Logger
 
 ## Description
 A program that backs up files and directories with versioning, logs the operations locally, and includes a GUI. Alternatively, the program can be written in C++ if you're more comfortable working with it.
