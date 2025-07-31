@@ -1,19 +1,19 @@
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 _DEFAULTS: Dict[str, Any] = {
     "backup_root": "backups",
     "default_version": "",
-    "compress": False        # default is plain copy
+    "compress": False,
 }
 
 
 class Config:
-    def __init__(self, file: str | Path = "config.json") -> None:
+    def __init__(self, file: Union[str, Path] = "config.json") -> None:
         self.path = Path(file).expanduser()
         if not self.path.exists():
-            self._write_defaults()        # first-run bootstrap
+            self._write_defaults()
         self._data: Dict[str, Any] = self._load()
 
     # ---------- public helpers ----------

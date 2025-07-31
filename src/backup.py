@@ -4,6 +4,7 @@ import datetime as _dt
 from pathlib import Path
 from typing import Union
 import zipfile
+from typing import Union, Optional
 import tempfile
 
 from .logger import LogWriter
@@ -13,16 +14,20 @@ from .config import Config
 class BackupManager:
     """High-level orchestrator for all backup operations."""
 
-    def __init__(self, logger: LogWriter | None = None, config: Config | None = None) -> None:
+    def __init__(
+        self,
+        logger: Optional[LogWriter] = None,
+        config: Optional[Config] = None,
+    ) -> None:
         self.log = logger or LogWriter()
         self.cfg = config or Config()
 
     def copy_folder(
         self,
         src: Union[str, Path],
-        dst_root: Union[str, Path] | None = None,
-        version: str | None = None,
-        compress: bool | None = None,          # NEW 🔹
+        dst_root: Union[str, Path, None] = None,
+        version: Optional[str] = None,
+        compress: Optional[bool] = None,
     ) -> Path:
         """
         Copy *src* into *dst_root*.
@@ -63,7 +68,7 @@ class BackupManager:
         self,
         src_path: Path,
         dst_root: Path,
-        version: str | None,
+        version: Optional[str],
         compress: bool,
     ) -> Path:
         date_part = _dt.datetime.now().strftime("%Y-%m-%d")
