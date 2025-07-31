@@ -51,15 +51,32 @@ pip install -r requirements.txt
 python -m src.gui
 ```
 
-## Project layout
+## Project Layout
+
+```
 file-backup-logger/
-├─ src/
-│  ├─ backup.py    ← engine (copy / zip / versioning / progress)
-│  ├─ config.py    ← JSON prefs (created on first run)
-│  ├─ logger.py    ← rotating log wrapper
-│  └─ gui.py       ← Tkinter front-end
-├─ tests/          ← pytest cases (headless)
-├─ backups/        ← generated at runtime (git-ignored)
-├─ logs/           ← rotating log files (git-ignored)
-├─ README.md
-└─ requirements.txt
+├── src/
+│   ├── __init__.py
+│   ├── backup.py      # engine: copy / zip / progress / auto-version
+│   ├── config.py      # JSON preferences helper
+│   ├── logger.py      # rotating log wrapper
+│   └── gui.py         # Tkinter desktop UI
+├── tests/             # pytest suite (headless)
+├── backups/           # runtime output (git-ignored)
+├── logs/              # rotating logs (git-ignored)
+├── requirements.txt   # dev-only deps (pytest)
+└── README.md
+```
+
+### File Descriptions
+
+| Path                 | Purpose                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `src/backup.py`      | Core `BackupManager` – handles folder copies, `.zip` creation, per‑file progress, and automatic patch‑version bumps.             |
+| `src/config.py`      | Reads/writes `config.json` so users can tweak defaults like `backup_root`, `compress`, and `default_version` without code edits. |
+| `src/logger.py`      | Thin wrapper around Python `logging`; provides rotating `backup.log` (5 × 512 KB) plus console echo.                             |
+| `src/gui.py`         | Tkinter desktop UI: browse for source/destination, ZIP toggle, determinate progress bar (runs engine in a background thread).    |
+| `tests/`             | Six headless pytest cases covering engine functionality, GUI instantiation, progress callbacks, and version bumping.             |
+| `backups/` & `logs/` | Created at runtime; git‑ignored to keep the repository clean.                                                                    |
+| `requirements.txt`   | Development dependency list (currently only `pytest`); main application relies solely on the standard library.                   |
+
