@@ -1,0 +1,8 @@
+# Byte-code / venv
+__pycache__/
+*.py[cod]
+.venv/
+
+# Output dirs
+backups/
+logs/
