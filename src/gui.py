@@ -108,18 +108,28 @@ class BackupApp(tk.Tk):
         # persist the user's compression preference
         self.cfg.set("compress", self.compress.get())
 
-        self.prog.start(10)
-        self.attributes("-disabled", True)  # freeze UI while working
+        self.prog.config(mode="determinate", value=0, maximum=100)
 
-        thread = threading.Thread(target=self._do_backup, daemon=True)
+        thread = threading.Thread(
+            target=self._do_backup,
+            daemon=True,
+        )
         thread.start()
 
     def _do_backup(self) -> None:
+
+        def gui_cb(done: int, total: int) -> None:
+            pct = int(done / total * 100) if total else 0
+            # marshal back to main thread
+            self.after(0, lambda: self.prog.config(value=pct))
+
+
         try:
             self.bm.copy_folder(
                 src=self.src_path,
                 dst_root=self.dst_root or self.cfg.get("backup_root", "backups"),
                 compress=self.compress.get(),
+                progress_cb=gui_cb,
             )
             self.after(
                 0,
@@ -127,7 +137,7 @@ class BackupApp(tk.Tk):
                     "Success", f"Backup completed:\n{self.src_path}"
                 ),
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self.after(
                 0,
                 lambda: messagebox.showerror("Backup failed", str(exc)),
