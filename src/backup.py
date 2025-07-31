@@ -3,31 +3,37 @@ import shutil
 import datetime as _dt
 from pathlib import Path
 from typing import Union
+import zipfile
+import tempfile
 
-from .logger import LogWriter   # NEW 🔹
+from .logger import LogWriter
+from .config import Config
 
 
 class BackupManager:
     """High-level orchestrator for all backup operations."""
 
-    def __init__(self, logger: LogWriter | None = None) -> None:   # NEW 🔹
+    def __init__(self, logger: LogWriter | None = None, config: Config | None = None) -> None:
         self.log = logger or LogWriter()
+        self.cfg = config or Config()
 
-    # ------------
-    # PUBLIC API
-    # ------------
     def copy_folder(
         self,
         src: Union[str, Path],
-        dst_root: Union[str, Path] = "backups",
-        version: str | None = None,        # NEW 🔹
+        dst_root: Union[str, Path] | None = None,
+        version: str | None = None,
+        compress: bool | None = None,          # NEW 🔹
     ) -> Path:
         """
-        Copy *src* directory into *dst_root* under a name that embeds
-        today's date and an optional version string.
-
-        Example: MyApp_2024-05-04_v1.2.3
+        Copy *src* into *dst_root*.
+        If *compress* is True, make a .zip instead of a folder.
         """
+        compress = (
+            compress if compress is not None else self.cfg.get("compress", False)
+        )
+        dst_root = dst_root or self.cfg.get("backup_root", "backups")
+        version = version if version is not None else self.cfg.get("default_version")
+
         src_path = Path(src).expanduser().resolve()
         if not src_path.is_dir():
             msg = f"Source folder not found: {src_path}"
@@ -37,38 +43,52 @@ class BackupManager:
         dst_root = Path(dst_root).expanduser().resolve()
         dst_root.mkdir(parents=True, exist_ok=True)
 
-        dst_path = self._make_dst_path(src_path, dst_root, version)
+        dst = self._make_dst_path(src_path, dst_root, version, compress)
 
-        try:
-            shutil.copytree(src_path, dst_path)
-            self.log.info(f"Copied {src_path} → {dst_path}")
-        except PermissionError as exc:
-            self.log.error(f"PermissionError: {exc}")
-            raise
-        except shutil.Error as exc:
-            self.log.error(f"shutil.Error: {exc}")
-            raise
+        if compress:
+            self._zip_folder(src_path, dst)
+            self.log.info(f"ZIPPED {src_path} → {dst}")
+        else:
+            shutil.copytree(src_path, dst)
+            self.log.info(f"Copied {src_path} → {dst}")
 
-        return dst_path
+        return dst
 
-    # ------------
+    
+
+    # --------------------
     # PRIVATE HELPERS
-    # ------------
+    # --------------------
     def _make_dst_path(
         self,
         src_path: Path,
         dst_root: Path,
         version: str | None,
+        compress: bool,
     ) -> Path:
         date_part = _dt.datetime.now().strftime("%Y-%m-%d")
         ver_part = f"_v{version}" if version else ""
-        return dst_root / f"{src_path.name}_{date_part}{ver_part}"
+        suffix = ".zip" if compress else ""
+        name = f"{src_path.name}_{date_part}{ver_part}{suffix}"
+        return dst_root / name
+
+    def _zip_folder(self, src_dir: Path, zip_path: Path) -> None:
+        """Recursively write *src_dir* into *zip_path*."""
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file in src_dir.rglob("*"):
+                # write relative paths to keep inside-zip structure clean
+                zf.write(file, file.relative_to(src_dir))
 
 
 if __name__ == "__main__":
     import argparse, sys
 
     parser = argparse.ArgumentParser(description="Copy a folder with timestamp.")
+    parser.add_argument(
+        "-z", "--zip",
+        action="store_true",
+        help="Store backup as a compressed .zip instead of a folder",
+    )
     parser.add_argument("src", help="Source directory to back up")
     parser.add_argument(
         "dst_root",
@@ -84,7 +104,12 @@ if __name__ == "__main__":
 
     bm = BackupManager()
     try:
-        bm.copy_folder(args.src, args.dst_root, version=args.version)
+        bm.copy_folder(
+        args.src,
+        args.dst_root,
+        version=args.version,
+        compress=args.zip,
+    )
     except Exception as exc:
         print(f"✖ Error: {exc}", file=sys.stderr)
         sys.exit(1)
